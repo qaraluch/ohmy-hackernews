@@ -1,7 +1,11 @@
 import React, { Component } from "react";
-import classNames from "classnames";
-import _ from "lodash";
 import "./App.css";
+import Todo from "./components/Todo/Todo";
+import Button from "./components/Button/Button";
+import Loading, { withLoading } from "./components/Loading/Loading";
+import Search from "./components/Search/Search";
+import Sort from "./components/Sort/Sort";
+import Table from "./components/Table/Table";
 
 //API data
 const DEFAULT_QUERY = "javascript";
@@ -14,27 +18,7 @@ const PARAM_PAGE = "page=";
 const PARAM_HPP = "hitsPerPage=";
 // [HackerNews/API: Documentation and Samples for the Official HN API](https://github.com/HackerNews/API)
 // [HN Search API | HN Search powered by Algolia](https://hn.algolia.com/api)
-
-// Sorts
-const SORTS = {
-  NONE: list => list,
-  TITLE: list => _.sortBy(list, "title"),
-  AUTHOR: list => _.sortBy(list, "author"),
-  COMMENTS: list => _.sortBy(list, "num_comments").reverse(),
-  POINTS: list => _.sortBy(list, "points").reverse()
-};
-
-const largeColumn = {
-  width: "40%"
-};
-
-const midColumn = {
-  width: "30%"
-};
-
-const smallColumn = {
-  width: "10%"
-};
+const ButtonWithLoading = withLoading(Button);
 
 const updateSearchTopStoriesState = (hits, page) => prevState => {
   const { results, searchKey } = prevState;
@@ -158,172 +142,4 @@ class App extends Component {
   }
 }
 
-function Button({ onClick, className = "", children }) {
-  return (
-    <button onClick={onClick} className={className} type="button">
-      {children}
-    </button>
-  );
-}
-
-const Loading = () => <div>Loading...</div>;
-
-const withLoading = Component => ({ isLoading, ...rest }) =>
-  isLoading ? <Loading /> : <Component {...rest} />;
-
-const ButtonWithLoading = withLoading(Button);
-
-class Search extends Component {
-  componentDidMount() {
-    if (this.input) {
-      this.input.focus();
-    }
-  }
-  render() {
-    const { value, onChange, onSubmit, children } = this.props;
-    return (
-      <form onSubmit={onSubmit}>
-        <input
-          type="text"
-          value={value}
-          onChange={onChange}
-          ref={el => (this.input = el)}
-        />
-        <button type="submit">{children}</button>
-      </form>
-    );
-  }
-}
-
-const Sort = ({ sortKey, activeSortKey, onSort, children }) => {
-  const sortClass = classNames("button-inline", {
-    "button-active": sortKey === activeSortKey
-  });
-  return (
-    <Button onClick={() => onSort(sortKey)} className={sortClass}>
-      {children}
-    </Button>
-  );
-};
-
-class Table extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      sortKey: "NONE",
-      isSortReverse: false
-    };
-    this.onSort = this.onSort.bind(this);
-  }
-
-  onSort(sortKey) {
-    const isSortReverse =
-      this.state.sortKey === sortKey && !this.state.isSortReverse;
-    this.setState({ sortKey, isSortReverse });
-  }
-
-  render() {
-    const { list, onDismiss } = this.props;
-    const { sortKey, isSortReverse } = this.state;
-    const sortedList = SORTS[sortKey](list);
-    const reverseSortedList = isSortReverse ? sortedList.reverse() : sortedList;
-    return (
-      <div className="table">
-        <div className="table-header">
-          <span style={{ width: "40%" }}>
-            <Sort
-              activeSortKey={sortKey}
-              sortKey={"TITLE"}
-              onSort={this.onSort}
-            >
-              Title
-            </Sort>
-          </span>
-          <span style={{ width: "30%" }}>
-            <Sort
-              activeSortKey={sortKey}
-              sortKey={"AUTHOR"}
-              onSort={this.onSort}
-            >
-              Author
-            </Sort>
-          </span>
-          <span style={{ width: "10%" }}>
-            <Sort
-              activeSortKey={sortKey}
-              sortKey={"COMMENTS"}
-              onSort={this.onSort}
-            >
-              Comments
-            </Sort>
-          </span>
-          <span style={{ width: "10%" }}>
-            <Sort
-              activeSortKey={sortKey}
-              sortKey={"POINTS"}
-              onSort={this.onSort}
-            >
-              Points
-            </Sort>
-          </span>
-          <span style={{ width: "10%" }}>Archive</span>
-        </div>
-        {reverseSortedList.map(item => (
-          <div key={item.objectID} className="table-row">
-            <span style={largeColumn}>
-              <a href={item.url}>{item.title}</a>
-            </span>
-            <span style={midColumn}>{item.author}</span>
-            <span style={smallColumn}>{item.num_comments}</span>
-            <span style={smallColumn}>{item.points}</span>
-            <span style={smallColumn}>
-              <Button
-                onClick={() => onDismiss(item.objectID)}
-                className="button-inline"
-              >
-                Dismiss
-              </Button>
-            </span>
-          </div>
-        ))}
-      </div>
-    );
-  }
-}
-
-const Todo = () => (
-  <div>
-    TODO:
-    <ul>
-      <li>- add clicable logo</li>
-      <li>- dodaj filtrowanie na client-side</li>
-      <li>- add query string</li>
-      <li>
-        - use awsomefonts arrows for sort - [React | Font
-        Awesome](https://fontawesome.com/how-to-use/on-the-web/using-with/react)
-      </li>
-      <li>
-        - add dateRange and popularity -
-        ?dateRange=pastMonth&page=0&prefix=false&query=javascript&sort=byPopularity&type=story
-      </li>
-    </ul>
-  </div>
-);
-
-//TODO:
-// <HNIcon />
-// function HNIcon() {
-//   return (
-//     <div>
-//       <img src="page/hackernews-icon.svg" alt="" />
-//     </div>
-//   );
-// }
-// import { ReactComponent as HNIcon } from "../page/hackernews-icon.svg";
-// [tanem/react-svg: A React component that injects SVG into the DOM.](https://github.com/tanem/react-svg)
-// svg part [CSS { In Real Life } | A Modern Front End Workflow Part 2: Module Bundling with Parcel](https://css-irl.info/a-modern-front-end-workflow-part-2/)
-
 export default App;
-
-// Export for testing.
-export { Button, Table, Search };
