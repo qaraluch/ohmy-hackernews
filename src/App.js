@@ -2,22 +2,11 @@ import React, { Component } from "react";
 import "./App.css";
 import Todo from "./components/Todo/Todo";
 import Button from "./components/Button/Button";
-import Loading, { withLoading } from "./components/Loading/Loading";
+import { withLoading } from "./components/Loading/Loading";
 import Search from "./components/Search/Search";
-import Sort from "./components/Sort/Sort";
 import Table from "./components/Table/Table";
+import { getStoriesAPI, DEFAULT_QUERY } from "./api/api";
 
-//API data
-const DEFAULT_QUERY = "javascript";
-const DEFAULT_HPP = "100";
-
-const PATH_BASE = "https://hn.algolia.com/api/v1";
-const PATH_SEARCH = "/search";
-const PARAM_SEARCH = "query=";
-const PARAM_PAGE = "page=";
-const PARAM_HPP = "hitsPerPage=";
-// [HackerNews/API: Documentation and Samples for the Official HN API](https://github.com/HackerNews/API)
-// [HN Search API | HN Search powered by Algolia](https://hn.algolia.com/api)
 const ButtonWithLoading = withLoading(Button);
 
 const updateSearchTopStoriesState = (hits, page) => prevState => {
@@ -61,14 +50,15 @@ class App extends Component {
     return !this.state.results[searchTerm];
   }
 
-  fetchSearchTopStories(searchTerm, page = 0) {
+  async fetchSearchTopStories(searchTerm, page = 0) {
     this.setState({ isLoading: true });
-    fetch(
-      `${PATH_BASE}${PATH_SEARCH}?${PARAM_SEARCH}${searchTerm}&${PARAM_PAGE}${page}&${PARAM_HPP}${DEFAULT_HPP}`
-    )
-      .then(response => response.json())
-      .then(result => this.setSearchTopStories(result))
-      .catch(error => this.setState({ error }));
+    const storiesRaw = await getStoriesAPI(searchTerm, page);
+    if (storiesRaw.error) {
+      this.setState({ error: storiesRaw.error });
+    } else {
+      const stories = await storiesRaw.data.json();
+      this.setSearchTopStories(stories);
+    }
   }
 
   onDismiss(id) {
