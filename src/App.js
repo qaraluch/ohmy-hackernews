@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { useState, useEffect } from "react";
 import "./App.css";
 import Todo from "./components/Todo/Todo";
 import Button from "./components/Button/Button";
@@ -7,129 +7,106 @@ import Search from "./components/Search/Search";
 import Table from "./components/Table/Table";
 import { getStoriesAPI, DEFAULT_QUERY } from "./api/api";
 
-const ButtonWithLoading = withLoading(Button);
+function App() {
+  const [results, setResults] = useState(null);
+  const [searchKey, setSearchKey] = useState("");
+  const [searchTerm, setSearchTerm] = useState(DEFAULT_QUERY);
+  const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-const updateSearchTopStoriesState = (hits, page) => prevState => {
-  const { results, searchKey } = prevState;
-  const oldHits = results && results[searchKey] ? results[searchKey].hits : [];
-  const updatedHits = [...oldHits, ...hits];
-  return {
-    results: {
+  const ButtonWithLoading = withLoading(Button);
+
+  const updateSearchTopStoriesState = (hits, page) => {
+    const oldHits =
+      results && results[searchKey] ? results[searchKey].hits : [];
+    const updatedHits = [...oldHits, ...hits];
+    setResults({
       ...results,
       [searchKey]: { hits: updatedHits, page }
-    },
-    isLoading: false
+    });
+    setIsLoading(false);
   };
-};
 
-class App extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      results: null,
-      searchKey: "",
-      searchTerm: DEFAULT_QUERY,
-      error: null,
-      isLoading: false
-    };
-    this.needsToSearchTopStories = this.needsToSearchTopStories.bind(this);
-    this.setSearchTopStories = this.setSearchTopStories.bind(this);
-    this.fetchSearchTopStories = this.fetchSearchTopStories.bind(this);
-    this.onDismiss = this.onDismiss.bind(this);
-    this.onSearchChange = this.onSearchChange.bind(this);
-    this.onSearchSubmit = this.onSearchSubmit.bind(this);
-  }
-
-  componentDidMount() {
-    const { searchTerm } = this.state;
-    this.setState({ searchKey: searchTerm });
-    this.fetchSearchTopStories(searchTerm);
-  }
-
-  needsToSearchTopStories(searchTerm) {
-    return !this.state.results[searchTerm];
-  }
-
-  async fetchSearchTopStories(searchTerm, page = 0) {
-    this.setState({ isLoading: true });
+  async function fetchSearchTopStories(searchTerm, page = 0) {
+    setIsLoading(true);
     const storiesRaw = await getStoriesAPI(searchTerm, page);
     if (storiesRaw.error) {
-      this.setState({ error: storiesRaw.error });
+      setError(storiesRaw.error);
     } else {
       const stories = await storiesRaw.data.json();
-      this.setSearchTopStories(stories);
+      setSearchTopStories(stories);
     }
   }
 
-  onDismiss(id) {
-    const { searchKey, results } = this.state;
-    const { hits, page } = results[searchKey];
+  useEffect(() => {
+    setSearchKey(searchTerm);
+    fetchSearchTopStories(searchTerm);
+  }, [searchTerm]); // w klasie jest searchTerm a działa w searchKey. dlaczego?
 
+  const needsToSearchTopStories = searchTerm => !results(searchTerm);
+
+  const onDismiss = id => {
+    const { hits, page } = results[searchKey];
     const isNotId = item => item.objectID !== id;
     const updatedHits = hits.filter(isNotId);
-    this.setState({
-      results: { ...results, [searchKey]: { hits: updatedHits, page } }
-    });
-  }
+    setResults({ ...results, [searchKey]: { hits: updatedHits, page } });
+  };
 
-  onSearchSubmit() {
-    const { searchTerm } = this.state;
-    this.setState({ searchKey: searchTerm });
-    if (this.needsToSearchTopStories(searchTerm)) {
-      this.fetchSearchTopStories(searchTerm);
+  const onSearchSubmit = () => {
+    if (needsToSearchTopStories(searchTerm)) {
+      fetchSearchTopStories(searchTerm);
     }
+    //preventDefault() event method to suppress the native browser behavior
+    //do not want the browser to reload when you hit submit on search field
+    //React handle it instead.
     event.preventDefault();
-  }
+  };
 
-  setSearchTopStories(result) {
+  const setSearchTopStories = result => {
     const { hits, page } = result;
-    this.setState(updateSearchTopStoriesState(hits, page));
-  }
+    updateSearchTopStoriesState(hits, page);
+  };
 
-  onSearchChange(event) {
-    this.setState({ searchTerm: event.target.value });
-  }
+  const onSearchChange = event => setSearchTerm(event.target.value);
 
-  render() {
-    const { searchTerm, results, searchKey, error, isLoading } = this.state;
+  const page = (results && results[searchKey] && results[searchKey].page) || 0;
+  const list = (results && results[searchKey] && results[searchKey].hits) || [];
 
-    const page =
-      (results && results[searchKey] && results[searchKey].page) || 0;
-    const list =
-      (results && results[searchKey] && results[searchKey].hits) || [];
+  return (
+    <div className="page">
 
-    return (
-      <div className="page">
-        <div className="interactions">
-          <Search
-            value={searchTerm}
-            onChange={this.onSearchChange}
-            onSubmit={this.onSearchSubmit}
-          >
-            HackerNews Search
-          </Search>
-        </div>
-        <Todo />
-        {error ? (
-          <div className="interactions">
-            <p>Something went wrong!</p>
-            <p>{error.toString()}</p>
-          </div>
-        ) : (
-          <Table list={list} onDismiss={this.onDismiss} />
-        )}
-        <div className="interactions">
-          <ButtonWithLoading
-            isLoading={isLoading}
-            onClick={() => this.fetchSearchTopStories(searchKey, page + 1)}
-            className="button-inline"
-          >
-            More
-          </ButtonWithLoading>
-        </div>
+      <div className="interactions">
+        <Search
+          value={searchTerm}
+          onChange={onSearchChange}
+          onSubmit={onSearchSubmit}
+        >
+          HackerNews Search
+        </Search>
       </div>
-    );
-  }
+
+      <Todo />
+
+      {error ? (
+        <div className="interactions">
+          <p>Something went wrong!</p>
+          <p>{error.toString()}</p>
+        </div>
+      ) : (
+        <Table list={list} onDismiss={onDismiss} />
+      )}
+
+      <div className="interactions">
+        <ButtonWithLoading
+          isLoading={isLoading}
+          onClick={() => fetchSearchTopStories(searchKey, page + 1)}
+          className="button-inline"
+        >
+          More
+        </ButtonWithLoading>
+      </div>
+    </div>
+  );
 }
 
 export default App;
