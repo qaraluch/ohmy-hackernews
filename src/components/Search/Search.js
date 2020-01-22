@@ -1,5 +1,7 @@
 import React, { Component } from "react";
 
+//TODO: implement label
+//[Include use of <label> inside <form> [improved UX] · Issue #11 · the-road-to-learn-react/hackernews-client](https://github.com/the-road-to-learn-react/hackernews-client/issues/11)
 class Search extends Component {
   componentDidMount() {
     if (this.input) {

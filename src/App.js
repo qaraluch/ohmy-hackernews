@@ -1,111 +1,91 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, Fragment } from "react";
 import "./App.css";
 import Todo from "./components/Todo/Todo";
 import Button from "./components/Button/Button";
 import { withLoading } from "./components/Loading/Loading";
 import Search from "./components/Search/Search";
 import Table from "./components/Table/Table";
-import { getStoriesAPI, DEFAULT_QUERY } from "./api/api";
+import useHackerNewsApi, { DEFAULT_QUERY } from "./hooks/useHackerNewsApi";
 
 function App() {
-  const [results, setResults] = useState(null);
-  const [searchKey, setSearchKey] = useState("");
-  const [searchTerm, setSearchTerm] = useState(DEFAULT_QUERY);
-  const [error, setError] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
+  // query is fluctuant state that changes with every key stroke in the input field
+  const [query, setQuery] = useState(DEFAULT_QUERY);
+  // searchKey is used for api request and cache system
+  //TODO: analize if i can get rid of it
+  const [searchKey, setSearchKey] = useState(DEFAULT_QUERY);
 
-  const ButtonWithLoading = withLoading(Button);
+  const apiQueryDefault = { searchKey };
+  const [
+    { requestResults, isLoading, isError, errorMsg },
+    doFetch
+  ] = useHackerNewsApi(apiQueryDefault);
 
-  const updateSearchTopStoriesState = (hits, page) => {
-    const oldHits =
-      results && results[searchKey] ? results[searchKey].hits : [];
-    const updatedHits = [...oldHits, ...hits];
-    setResults({
-      ...results,
-      [searchKey]: { hits: updatedHits, page }
-    });
-    setIsLoading(false);
-  };
+  const onSearchChange = event => setQuery(event.target.value);
 
-  async function fetchSearchTopStories(searchTerm, page = 0) {
-    setIsLoading(true);
-    const storiesRaw = await getStoriesAPI(searchTerm, page);
-    if (storiesRaw.error) {
-      setError(storiesRaw.error);
-    } else {
-      const stories = await storiesRaw.data.json();
-      setSearchTopStories(stories);
+  const checkIfReguestAlreadyCached = searchKey => !requestResults[searchKey];
+
+  const onSearchSubmit = event => {
+    // hooks gotcha - stale state in the eventhandler; see tiljs: react-hooks.md
+    setSearchKey(query);
+    if (checkIfReguestAlreadyCached(query)) {
+      const newApiQuery = { searchKey: query };
+      doFetch(newApiQuery);
     }
-  }
-
-  useEffect(() => {
-    setSearchKey(searchTerm);
-    fetchSearchTopStories(searchTerm);
-  }, [searchTerm]); // w klasie jest searchTerm a działa w searchKey. dlaczego?
-
-  const needsToSearchTopStories = searchTerm => !results(searchTerm);
-
-  const onDismiss = id => {
-    const { hits, page } = results[searchKey];
-    const isNotId = item => item.objectID !== id;
-    const updatedHits = hits.filter(isNotId);
-    setResults({ ...results, [searchKey]: { hits: updatedHits, page } });
-  };
-
-  const onSearchSubmit = () => {
-    if (needsToSearchTopStories(searchTerm)) {
-      fetchSearchTopStories(searchTerm);
-    }
-    //preventDefault() event method to suppress the native browser behavior
-    //do not want the browser to reload when you hit submit on search field
-    //React handle it instead.
     event.preventDefault();
   };
 
-  const setSearchTopStories = result => {
-    const { hits, page } = result;
-    updateSearchTopStoriesState(hits, page);
-  };
+  const ButtonWithLoading = withLoading(Button);
 
-  const onSearchChange = event => setSearchTerm(event.target.value);
-
-  const page = (results && results[searchKey] && results[searchKey].page) || 0;
-  const list = (results && results[searchKey] && results[searchKey].hits) || [];
+  const pageForRender =
+    (requestResults &&
+      requestResults[searchKey] &&
+      requestResults[searchKey].page) ||
+    0;
+  const listForRender =
+    (requestResults &&
+      requestResults[searchKey] &&
+      requestResults[searchKey].hits) ||
+    [];
 
   return (
-    <div className="page">
-
-      <div className="interactions">
-        <Search
-          value={searchTerm}
-          onChange={onSearchChange}
-          onSubmit={onSearchSubmit}
-        >
-          HackerNews Search
-        </Search>
-      </div>
-
-      <Todo />
-
-      {error ? (
+    <Fragment>
+      <div className="page">
         <div className="interactions">
-          <p>Something went wrong!</p>
-          <p>{error.toString()}</p>
+          <Search
+            value={query}
+            onChange={onSearchChange}
+            onSubmit={onSearchSubmit}
+          >
+            HackerNews Search
+          </Search>
         </div>
-      ) : (
-        <Table list={list} onDismiss={onDismiss} />
-      )}
 
-      <div className="interactions">
-        <ButtonWithLoading
-          isLoading={isLoading}
-          onClick={() => fetchSearchTopStories(searchKey, page + 1)}
-          className="button-inline"
-        >
-          More
-        </ButtonWithLoading>
+        <Todo />
+
+        {isError ? (
+          <div className="interactions">
+            <p>Something went wrong!</p>
+            <p>{errorMsg}</p>
+          </div>
+        ) : (
+          <Table list={listForRender} onDismiss={() => {}} />
+        )}
+
+        <div className="interactions">
+          <ButtonWithLoading
+            isLoading={isLoading}
+            onClick={() => {
+              // onClick={() => this.fetchSearchTopStories(searchKey, pageForRender + 1)}
+              // setSearchKey(searchKey);
+              // setPage(page + 1);
+            }}
+            className="button-inline"
+          >
+            More
+          </ButtonWithLoading>
+        </div>
       </div>
-    </div>
+    </Fragment>
   );
 }
 

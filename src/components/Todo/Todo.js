@@ -5,7 +5,6 @@ const Todo = () => (
     TODO:
     <ul>
       <li>- add clicable logo</li>
-      <li>- dodaj filtrowanie na client-side</li>
       <li>- add query string</li>
       <li>
         - use awsomefonts arrows for sort - [React | Font
@@ -15,6 +14,8 @@ const Todo = () => (
         - add dateRange and popularity -
         ?dateRange=pastMonth&page=0&prefix=false&query=javascript&sort=byPopularity&type=story
       </li>
+      <li> - add material-ui</li>
+      <li> - implement different pressets</li>
     </ul>
   </div>
 );
