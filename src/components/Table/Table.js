@@ -42,8 +42,10 @@ class Table extends Component {
   render() {
     const { list, onDismiss } = this.props;
     const { sortKey, isSortReverse } = this.state;
+
     const sortedList = SORTS[sortKey](list);
     const reverseSortedList = isSortReverse ? sortedList.reverse() : sortedList;
+
     return (
       <div className="table">
         <div className="table-header">

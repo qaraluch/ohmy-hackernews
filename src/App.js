@@ -1,4 +1,4 @@
-import React, { useState, Fragment } from "react";
+import React, { useEffect, useState, Fragment } from "react";
 import "./App.css";
 import Todo from "./components/Todo/Todo";
 import Button from "./components/Button/Button";
@@ -11,14 +11,27 @@ function App() {
   // query is fluctuant state that changes with every key stroke in the input field
   const [query, setQuery] = useState(DEFAULT_QUERY);
   // searchKey is used for api request and cache system
-  //TODO: analize if i can get rid of it
   const [searchKey, setSearchKey] = useState(DEFAULT_QUERY);
+  const [listToRender, setListToRender] = useState([]);
 
   const apiQueryDefault = { searchKey };
   const [
     { requestResults, isLoading, isError, errorMsg },
     doFetch
   ] = useHackerNewsApi(apiQueryDefault);
+
+  const getListForRender = requestResults => {
+    const list =
+      (requestResults &&
+        requestResults[searchKey] &&
+        requestResults[searchKey].hits) ||
+      [];
+    return list;
+  };
+
+  useEffect(() => {
+    setListToRender(getListForRender(requestResults));
+  }, [requestResults]);
 
   const onSearchChange = event => setQuery(event.target.value);
 
@@ -34,6 +47,12 @@ function App() {
     event.preventDefault();
   };
 
+  const onTablesRowDismiss = id => {
+    const isNotId = item => item.objectID !== id;
+    const updatedHits = listToRender.filter(isNotId);
+    setListToRender(updatedHits);
+  };
+
   const ButtonWithLoading = withLoading(Button);
 
   const pageForRender =
@@ -41,11 +60,6 @@ function App() {
       requestResults[searchKey] &&
       requestResults[searchKey].page) ||
     0;
-  const listForRender =
-    (requestResults &&
-      requestResults[searchKey] &&
-      requestResults[searchKey].hits) ||
-    [];
 
   return (
     <Fragment>
@@ -68,17 +82,13 @@ function App() {
             <p>{errorMsg}</p>
           </div>
         ) : (
-          <Table list={listForRender} onDismiss={() => {}} />
+          <Table list={listToRender} onDismiss={onTablesRowDismiss} />
         )}
 
         <div className="interactions">
           <ButtonWithLoading
             isLoading={isLoading}
-            onClick={() => {
-              // onClick={() => this.fetchSearchTopStories(searchKey, pageForRender + 1)}
-              // setSearchKey(searchKey);
-              // setPage(page + 1);
-            }}
+            onClick={console.log()}
             className="button-inline"
           >
             More
