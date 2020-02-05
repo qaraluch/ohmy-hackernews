@@ -29,6 +29,15 @@ function App() {
     return list;
   };
 
+  const getPageForRender = requestResults => {
+    const page =
+      (requestResults &&
+        requestResults[searchKey] &&
+        requestResults[searchKey].page) ||
+      0;
+    return page;
+  };
+
   useEffect(() => {
     setListToRender(getListForRender(requestResults));
   }, [requestResults]);
@@ -55,11 +64,7 @@ function App() {
 
   const ButtonWithLoading = withLoading(Button);
 
-  const pageForRender =
-    (requestResults &&
-      requestResults[searchKey] &&
-      requestResults[searchKey].page) ||
-    0;
+  const nextPage = getPageForRender(requestResults) + 1;
 
   return (
     <Fragment>
@@ -88,7 +93,7 @@ function App() {
         <div className="interactions">
           <ButtonWithLoading
             isLoading={isLoading}
-            onClick={console.log()}
+            onClick={() => doFetch({ searchKey, page: nextPage })}
             className="button-inline"
           >
             More
