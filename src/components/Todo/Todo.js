@@ -16,6 +16,8 @@ const Todo = () => (
       </li>
       <li> - add material-ui</li>
       <li> - implement different pressets</li>
+      <li> - implement link to commant page </li>
+      <li> - remove sort from tite and author</li>
     </ul>
   </div>
 );
