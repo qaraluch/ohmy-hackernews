@@ -20,7 +20,7 @@ function App() {
     doFetch
   ] = useHackerNewsApi(apiQueryDefault);
 
-  const getListForRender = requestResults => {
+  const getListForRender = (requestResults, searchKey) => {
     const list =
       (requestResults &&
         requestResults[searchKey] &&
@@ -29,7 +29,7 @@ function App() {
     return list;
   };
 
-  const getPageForRender = requestResults => {
+  const getPageForRender = (requestResults, searchKey) => {
     const page =
       (requestResults &&
         requestResults[searchKey] &&
@@ -39,8 +39,8 @@ function App() {
   };
 
   useEffect(() => {
-    setListToRender(getListForRender(requestResults));
-  }, [requestResults]);
+    setListToRender(getListForRender(requestResults, searchKey));
+  }, [requestResults, searchKey]);
 
   const onSearchChange = event => setQuery(event.target.value);
 
@@ -64,7 +64,7 @@ function App() {
 
   const ButtonWithLoading = withLoading(Button);
 
-  const nextPage = getPageForRender(requestResults) + 1;
+  const nextPage = getPageForRender(requestResults, searchKey) + 1;
 
   return (
     <Fragment>
