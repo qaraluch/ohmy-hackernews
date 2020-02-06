@@ -1,4 +1,5 @@
 import { useReducer, useState, useEffect } from "react";
+import useIsMounted from "./useIsMounted";
 import axios from "axios";
 
 // API data
@@ -78,6 +79,7 @@ const dataFetchReducer = (state, action) => {
 };
 
 const useHackerNewsApi = initialApiQuery => {
+  const isMounted = useIsMounted();
   const [apiQuery, setApiQuery] = useState(initialApiQuery);
   const { searchKey } = apiQuery;
 
@@ -91,27 +93,22 @@ const useHackerNewsApi = initialApiQuery => {
   const [state, dispatch] = useReducer(dataFetchReducer, initialState);
 
   useEffect(() => {
-    //TODO: use useIsMounted hook from npm!
-    let didCancel = false;
     const fetchData = async () => {
       dispatch({ type: "FETCH_INIT" });
       const urlRequest = getUrlString(apiQuery);
       const { data: result, error } = await getStories(urlRequest);
       if (result) {
-        didCancel ||
+        isMounted.current &&
           dispatch({
             type: "FETCH_SUCCESS",
             payload: [result.data, searchKey]
           }); // 2x data due to axios api
       } else {
-        didCancel ||
+        isMounted.current &&
           dispatch({ type: "FETCH_FAILURE", payload: error.toString() });
       }
     };
     fetchData();
-    return () => {
-      didCancel = true;
-    };
   }, [apiQuery]);
   return [state, setApiQuery]; //setApiQuery === doFetch
 };
