@@ -2,22 +2,22 @@ import React from "react";
 
 const Todo = () => (
   <div>
-    TODO:
+    TODO features:
     <ul>
-      <li>- add clicable logo</li>
-      <li>- add query string</li>
-      <li>
-        - use awsomefonts arrows for sort - [React | Font
-        Awesome](https://fontawesome.com/how-to-use/on-the-web/using-with/react)
-      </li>
-      <li>
-        - add dateRange and popularity -
+      <li> - add query string</li>
+      <li> - implement different pressets</li>
+      <li> - add dateRange and popularity -
         ?dateRange=pastMonth&page=0&prefix=false&query=javascript&sort=byPopularity&type=story
       </li>
-      <li> - add material-ui</li>
-      <li> - implement different pressets</li>
       <li> - implement link to commant page </li>
-      <li> - remove sort from tite and author</li>
+    </ul>
+    TODO visual:
+    <ul>
+      <li> - add clicable logo</li>
+      <li> - use awsomefonts arrows for sort - [React | Font
+        Awesome](https://fontawesome.com/how-to-use/on-the-web/using-with/react)
+      </li>
+      <li> - add material-ui</li>
     </ul>
   </div>
 );

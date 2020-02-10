@@ -5,8 +5,6 @@ import _ from "lodash";
 
 const SORTS = {
   NONE: list => list,
-  TITLE: list => _.sortBy(list, "title"),
-  AUTHOR: list => _.sortBy(list, "author"),
   COMMENTS: list => _.sortBy(list, "num_comments").reverse(),
   POINTS: list => _.sortBy(list, "points").reverse()
 };
@@ -51,16 +49,8 @@ function Table({ list, onDismiss }) {
   return (
     <div className="table">
       <div className="table-header">
-        <span style={largeColumn}>
-          <Sort activeSortKey={sortKey} sortKey={"TITLE"} onSort={onSort}>
-            Title
-          </Sort>
-        </span>
-        <span style={midColumn}>
-          <Sort activeSortKey={sortKey} sortKey={"AUTHOR"} onSort={onSort}>
-            Author
-          </Sort>
-        </span>
+        <span style={largeColumn}>Title</span>
+        <span style={midColumn}>Author</span>
         <span style={smallColumn}>
           <Sort activeSortKey={sortKey} sortKey={"COMMENTS"} onSort={onSort}>
             Comments
