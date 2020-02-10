@@ -46,34 +46,34 @@ function Table({ list, onDismiss }) {
     return reverseSortedList;
   }
 
-  const listState = prepareListToRender(list, sortKey, isSortReverse);
+  const listRender = prepareListToRender(list, sortKey, isSortReverse);
 
   return (
     <div className="table">
       <div className="table-header">
-        <span style={{ width: "40%" }}>
+        <span style={largeColumn}>
           <Sort activeSortKey={sortKey} sortKey={"TITLE"} onSort={onSort}>
             Title
           </Sort>
         </span>
-        <span style={{ width: "30%" }}>
+        <span style={midColumn}>
           <Sort activeSortKey={sortKey} sortKey={"AUTHOR"} onSort={onSort}>
             Author
           </Sort>
         </span>
-        <span style={{ width: "10%" }}>
+        <span style={smallColumn}>
           <Sort activeSortKey={sortKey} sortKey={"COMMENTS"} onSort={onSort}>
             Comments
           </Sort>
         </span>
-        <span style={{ width: "10%" }}>
+        <span style={smallColumn}>
           <Sort activeSortKey={sortKey} sortKey={"POINTS"} onSort={onSort}>
             Points
           </Sort>
         </span>
-        <span style={{ width: "10%" }}>Archive</span>
+        <span style={smallColumn}>Archive</span>
       </div>
-      {listState.map(item => (
+      {listRender.map(item => (
         <div key={item.objectID} className="table-row">
           <span style={largeColumn}>
             <a href={item.url}>{item.title}</a>
