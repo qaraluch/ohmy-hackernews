@@ -46,11 +46,20 @@ function App() {
 
   const checkIfReguestAlreadyCached = searchKey => !requestResults[searchKey];
 
-  const onSearchSubmit = event => {
+  const onSearchSubmit = (event, presetQuery) => {
     // hooks gotcha - stale state in the eventhandler; see tiljs: react-hooks.md
-    setSearchKey(query);
-    if (checkIfReguestAlreadyCached(query)) {
-      const newApiQuery = { searchKey: query };
+    let queryLocal;
+    if (presetQuery) {
+      // submit from preset
+      queryLocal = presetQuery;
+      setQuery(queryLocal);
+    } else {
+      // submit from search
+      queryLocal = query; // query from state
+    }
+    setSearchKey(queryLocal);
+    if (checkIfReguestAlreadyCached(queryLocal)) {
+      const newApiQuery = { searchKey: queryLocal };
       doFetch(newApiQuery);
     }
     event.preventDefault();
@@ -69,6 +78,20 @@ function App() {
   return (
     <Fragment>
       <div className="page">
+        <div className="interactions">
+          <Button
+            onClick={event => onSearchSubmit(event, "node.js")}
+            className="button-active"
+          >
+            Node.js
+          </Button>
+          <Button
+            onClick={event => onSearchSubmit(event, "react")}
+            className="button-active"
+          >
+            React
+          </Button>
+        </div>
         <div className="interactions">
           <Search
             value={query}
