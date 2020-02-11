@@ -4,12 +4,8 @@ const Todo = () => (
   <div>
     TODO features:
     <ul>
-      <li> - add query string</li>
       <li> - implement different pressets</li>
-      <li> - add dateRange and popularity -
-        ?dateRange=pastMonth&page=0&prefix=false&query=javascript&sort=byPopularity&type=story
-      </li>
-      <li> - implement link to commant page </li>
+      <li> - fix bug - not persistant dismissed items</li>
     </ul>
     TODO visual:
     <ul>

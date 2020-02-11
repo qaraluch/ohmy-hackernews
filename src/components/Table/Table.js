@@ -66,7 +66,16 @@ function Table({ list, onDismiss }) {
       {listRender.map(item => (
         <div key={item.objectID} className="table-row">
           <span style={largeColumn}>
-            <a href={item.url}>{item.title}</a>
+            <a
+              href={`https://news.ycombinator.com/item?id=${item.objectID}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {item.title}
+            </a>
+            <a href={item.url} target="_blank" rel="noopener noreferrer">
+              &nbsp;&nbsp;[&gt;&gt;]
+            </a>
           </span>
           <span style={midColumn}>{item.author}</span>
           <span style={smallColumn}>{item.num_comments}</span>
