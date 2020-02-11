@@ -1,5 +1,6 @@
 import { useReducer, useState, useEffect } from "react";
 import useIsMounted from "./useIsMounted";
+import getTimestampMonthBefore from "../utils/getTimestampMonthBefore";
 import axios from "axios";
 
 // API data
@@ -10,12 +11,15 @@ const PATH_BASE = "https://hn.algolia.com/api/v1";
 const PATH_SEARCH = "/search";
 const PARAM_SEARCH = "query=";
 const PARAM_PAGE = "page=";
+const PARAM_TAGS = "tags=";
 const PARAM_HPP = "hitsPerPage=";
+const PARAM_NUMERIC_FILTERS = "numericFilters=created_at_i>="
 // [HackerNews/API: Documentation and Samples for the Official HN API](https://github.com/HackerNews/API)
 // [HN Search API | HN Search powered by Algolia](https://hn.algolia.com/api)
 
-function getUrlString({ searchKey, page = 0 }) {
-  return `${PATH_BASE}${PATH_SEARCH}?${PARAM_SEARCH}${searchKey}&${PARAM_PAGE}${page}&${PARAM_HPP}${DEFAULT_HPP}`;
+function getUrlString({ searchKey, page = 0, tags = "story" }) {
+  const timestamp = getTimestampMonthBefore(); // in seconds
+  return `${PATH_BASE}${PATH_SEARCH}?${PARAM_SEARCH}${searchKey}&${PARAM_TAGS}${tags}&${PARAM_PAGE}${page}&${PARAM_HPP}${DEFAULT_HPP}&${PARAM_NUMERIC_FILTERS}${timestamp}`;
 }
 
 async function resolveThis(promise) {
@@ -64,6 +68,7 @@ const dataFetchReducer = (state, action) => {
       ...state,
       isLoading: false,
       isError: false,
+      requestQuery: payload[2], // see: -->[1]
       requestResults: cachePayloadFn(state)
     };
   } else if (type === "FETCH_FAILURE") {
@@ -87,6 +92,7 @@ const useHackerNewsApi = initialApiQuery => {
     isLoading: false,
     isError: false,
     errorMsg: null,
+    requestQuery: null,
     requestResults: {}
   };
 
@@ -96,12 +102,13 @@ const useHackerNewsApi = initialApiQuery => {
     const fetchData = async () => {
       dispatch({ type: "FETCH_INIT" });
       const urlRequest = getUrlString(apiQuery);
+      console.log("Request url: ", urlRequest);
       const { data: result, error } = await getStories(urlRequest);
       if (result) {
         isMounted.current &&
           dispatch({
             type: "FETCH_SUCCESS",
-            payload: [result.data, searchKey]
+            payload: [result.data, searchKey, urlRequest] // see: -->[1]
           }); // 2x data due to axios api
       } else {
         isMounted.current &&
