@@ -13,7 +13,7 @@ const PARAM_SEARCH = "query=";
 const PARAM_PAGE = "page=";
 const PARAM_TAGS = "tags=";
 const PARAM_HPP = "hitsPerPage=";
-const PARAM_NUMERIC_FILTERS = "numericFilters=created_at_i>="
+const PARAM_NUMERIC_FILTERS = "numericFilters=created_at_i>=";
 // [HackerNews/API: Documentation and Samples for the Official HN API](https://github.com/HackerNews/API)
 // [HN Search API | HN Search powered by Algolia](https://hn.algolia.com/api)
 
@@ -53,9 +53,22 @@ const updateCachedRequestState = (hits, page, searchKey) => prevState => {
 };
 
 const cacheRequestResult = result => {
+  //TODO: refactor this like folloing fn
   const [{ hits, page }, searchKey] = result;
   // Returns Higher Order Fn
   return updateCachedRequestState(hits, page, searchKey);
+};
+
+const updateCachedState = (searchKey, updatedHits) => prevState => {
+  const dataOldCached = prevState.requestResults;
+  return {
+    ...dataOldCached,
+    [searchKey]: { ...dataOldCached[searchKey], hits: updatedHits }
+  };
+};
+
+const updateCache = ({ searchKey, updatedHits }) => {
+  return updateCachedState(searchKey, updatedHits);
 };
 
 const dataFetchReducer = (state, action) => {
@@ -78,6 +91,14 @@ const dataFetchReducer = (state, action) => {
       isError: true,
       errorMsg: payload
     };
+  } else if (type === "UPDATE_CACHE") {
+    const updateCachePayloadFn = updateCache(payload);
+    return {
+      ...state,
+      isLoading: false,
+      isError: false,
+      requestResults: updateCachePayloadFn(state)
+    };
   } else {
     throw new Error("useHackerNewsApi.js - dataFetchReducer error!");
   }
@@ -86,6 +107,7 @@ const dataFetchReducer = (state, action) => {
 const useHackerNewsApi = initialApiQuery => {
   const isMounted = useIsMounted();
   const [apiQuery, setApiQuery] = useState(initialApiQuery);
+  const [updateCacheData, setUpdateCacheData] = useState({});
   const { searchKey } = apiQuery;
 
   const initialState = {
@@ -117,7 +139,18 @@ const useHackerNewsApi = initialApiQuery => {
     };
     fetchData();
   }, [apiQuery]);
-  return [state, setApiQuery]; //setApiQuery === doFetch
+
+  useEffect(() => {
+    isMounted.current &&
+      dispatch({
+        type: "UPDATE_CACHE",
+        payload: updateCacheData
+      });
+  }, [updateCacheData]);
+
+  return [state, setApiQuery, setUpdateCacheData];
+  //setApiQuery === doFetch
+  //setUpdateCacheData === updateCache
 };
 
 export default useHackerNewsApi;

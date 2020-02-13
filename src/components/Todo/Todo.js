@@ -4,8 +4,6 @@ const Todo = () => (
   <div>
     TODO features:
     <ul>
-      <li> - implement different pressets</li>
-      <li> - fix bug - not persistant dismissed items</li>
     </ul>
     TODO visual:
     <ul>

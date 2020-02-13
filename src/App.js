@@ -17,7 +17,8 @@ function App() {
   const apiQueryDefault = { searchKey };
   const [
     { requestResults, isLoading, isError, errorMsg },
-    doFetch
+    doFetch,
+    updateCache
   ] = useHackerNewsApi(apiQueryDefault);
 
   const getListForRender = (requestResults, searchKey) => {
@@ -68,7 +69,7 @@ function App() {
   const onTablesRowDismiss = id => {
     const isNotId = item => item.objectID !== id;
     const updatedHits = listToRender.filter(isNotId);
-    setListToRender(updatedHits);
+    updateCache({ searchKey, updatedHits });
   };
 
   const ButtonWithLoading = withLoading(Button);
