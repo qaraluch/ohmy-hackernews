@@ -9,25 +9,16 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-const Loading = props => {
+const Error = ({ errorMsg, ...props }) => {
   const classes = useStyles();
   return (
     <Typography variant="button" component="div">
-      <Box
-        {...props}
-        color="primary.main"
-        letterSpacing={6}
-        className={classes.box}
-      >
-        Loading...
+      <Box {...props} color="primary.main" className={classes.box}>
+        <Box>Something went wrong!</Box>
+        <Box>{errorMsg}</Box>
       </Box>
     </Typography>
   );
 };
 
-const withLoading = Component => ({ isLoading, ...rest }) =>
-  isLoading ? <Loading /> : <Component {...rest} />;
-
-export default Loading;
-
-export { withLoading };
+export { Error };

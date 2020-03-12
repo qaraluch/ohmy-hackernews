@@ -1,13 +1,33 @@
-import React, { useEffect, useState, Fragment } from "react";
-import "./App.css";
-import Todo from "./components/Todo/Todo";
-import Button from "./components/Button/Button";
+import React, { useEffect, useState } from "react";
+
+import CssBaseline from "@material-ui/core/CssBaseline";
+import { makeStyles, ThemeProvider } from "@material-ui/core/styles";
+import { theme } from "./theme/theme";
+import Container from "@material-ui/core/Container";
+import Grid from "@material-ui/core/Grid";
+
+import { HnIcon } from "./components/HnIcon/HnIcon";
+import { GhCorner } from "./components/GhCorner/GhCorner";
+import { SearchContainer } from "./components/SearchContainer/SearchContainer";
+import { PresetsContainer } from "./components/PresetsContainer/PresetsContainer";
+import { MoreButtonContainer } from "./components/MoreButtonContainer/MoreButtonContainer";
+import { Error } from "./components/Error/Error";
+
 import { withLoading } from "./components/Loading/Loading";
-import Search from "./components/Search/Search";
-import Table from "./components/Table/Table";
+import { TableResults } from "./components/TableResults/TableResults";
 import useHackerNewsApi, { DEFAULT_QUERY } from "./hooks/useHackerNewsApi";
 
+const useStyles = makeStyles(theme => ({
+  searchRoot: {
+    padding: theme.spacing(3)
+  },
+  tableRoot: {
+    padding: theme.spacing(3)
+  }
+}));
+
 function App() {
+  const classes = useStyles();
   // query is fluctuant state that changes with every key stroke in the input field
   const [query, setQuery] = useState(DEFAULT_QUERY);
   // searchKey is used for api request and cache system
@@ -72,59 +92,71 @@ function App() {
     updateCache({ searchKey, updatedHits });
   };
 
-  const ButtonWithLoading = withLoading(Button);
+  const MoreButtonContainerWithLoading = withLoading(MoreButtonContainer);
 
   const nextPage = getPageForRender(requestResults, searchKey) + 1;
 
   return (
-    <Fragment>
-      <div className="page">
-        <div className="interactions">
-          <Button
-            onClick={event => onSearchSubmit(event, "node.js")}
-            className="button-active"
+    <>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <Container maxWidth="xl">
+          <GhCorner
+            href="https://github.com/qaraluch/ohmy-hackernews"
+            bgColor="black"
+            size={80}
+          />
+          <Grid
+            container
+            direction="row"
+            justify="space-between"
+            spacing={3}
+            alignItems="flex-start"
+            className={classes.searchRoot}
           >
-            Node.js
-          </Button>
-          <Button
-            onClick={event => onSearchSubmit(event, "react")}
-            className="button-active"
+            <Grid item xs={1}>
+              <HnIcon />
+            </Grid>
+            <Grid item xs={4}>
+              <SearchContainer
+                value={query}
+                onChange={onSearchChange}
+                onSubmit={onSearchSubmit}
+              />
+            </Grid>
+            <Grid item xs={7}>
+              <PresetsContainer onClick={onSearchSubmit} />
+            </Grid>
+          </Grid>
+        </Container>
+        <Container maxWidth="xl">
+          <Grid
+            container
+            direction="column"
+            justify="flex-start"
+            alignItems="center"
+            className={classes.tableRoot}
           >
-            React
-          </Button>
-        </div>
-        <div className="interactions">
-          <Search
-            value={query}
-            onChange={onSearchChange}
-            onSubmit={onSearchSubmit}
-          >
-            HackerNews Search
-          </Search>
-        </div>
-
-        <Todo />
-
-        {isError ? (
-          <div className="interactions">
-            <p>Something went wrong!</p>
-            <p>{errorMsg}</p>
-          </div>
-        ) : (
-          <Table list={listToRender} onDismiss={onTablesRowDismiss} />
-        )}
-
-        <div className="interactions">
-          <ButtonWithLoading
-            isLoading={isLoading}
-            onClick={() => doFetch({ searchKey, page: nextPage })}
-            className="button-inline"
-          >
-            More
-          </ButtonWithLoading>
-        </div>
-      </div>
-    </Fragment>
+            <Grid item>
+              {isError ? (
+                <Error errorMsg={errorMsg} />
+              ) : (
+                <TableResults
+                  list={listToRender}
+                  onDismiss={onTablesRowDismiss}
+                />
+              )}
+            </Grid>
+            <Grid item>
+              <MoreButtonContainerWithLoading
+                isLoading={isLoading}
+                onClick={() => doFetch({ searchKey, page: nextPage })}
+              />
+            </Grid>
+          </Grid>
+        </Container>
+      </ThemeProvider>
+    </>
   );
 }
 
