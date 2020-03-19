@@ -27,7 +27,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 //TODO: move presetsList to some kind of config
-const presetsList = ["node.js", "react", "docker", "next.js", "gatsby"];
+const presetsList = ["node.js", "React", "next.js"];
 
 function PresetsContainer({ onClick }) {
   const classes = useStyles();

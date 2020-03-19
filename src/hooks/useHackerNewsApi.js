@@ -5,7 +5,7 @@ import axios from "axios";
 
 // API data
 const DEFAULT_QUERY = "javascript";
-const DEFAULT_HPP = "10";
+const DEFAULT_HPP = "100";
 
 const PATH_BASE = "https://hn.algolia.com/api/v1";
 const PATH_SEARCH = "/search";

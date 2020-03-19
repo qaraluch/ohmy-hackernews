@@ -17,6 +17,8 @@ import IconButton from "@material-ui/core/IconButton";
 import DeleteIcon from "@material-ui/icons/Delete";
 import LinkSharpIcon from "@material-ui/icons/LinkSharp";
 
+import shortenDate from "../../utils/shortenDate";
+
 const useStyles = makeStyles(theme => ({
   author: {
     fontSize: "0.8rem",
@@ -179,7 +181,7 @@ function TableResults({ list, onDismiss }) {
                     </Link>
                   </IconButton>
                   <Box className={classes.author}>{item.author} </Box>
-                  <Box className={classes.date}>@{item.created_at} </Box>
+                  <Box className={classes.date}>@{shortenDate(item.created_at)} </Box>
                 </Grid>
               </TableCell>
               <TableCell align="right" className={classes.comments}>
