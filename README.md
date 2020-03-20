@@ -28,7 +28,7 @@ Started as React.js tutorial [📓The Road to learn React](https://github.com/th
 
 - Styling (material-ui)
 - Refactored to hooks (rewrited API calls to custom hook)
-- Conde modularized
+- Code modularization
 
 ## Used template
 
